@@ -161,12 +161,26 @@ class InputsWidget(QtGui.QWidget):
                     waitingLabel.setText("%s:" % parameters[name].name)
                     waitingGroup.addWidget(waitingLabel)
                     self.waitingBox.valueChanged.connect(lambda: self.setWaitingTime(waiting))
+
+                    self.driveBackLabel = QtGui.QLabel(self)
+                    self.driveBackLabel.setText("Drive Back")
+                    self.driveBackCheckBox = QtGui.QCheckBox(self)
+                    if (self._procedure.get_parameter("driveBack") == False):
+                        self.driveBackCheckBox.setChecked(False)
+                    else:
+                        self.driveBackCheckBox.setChecked(True)
+                    self.driveBackCheckBox.clicked.connect(self.driveBackOptionSetter)
                     waitingGroup.addWidget(self.waitingBox)
                     waitingGroup.addWidget(self.waitingCheckBox)
+                    waitingGroup.addWidget(self.driveBackLabel)
+                    waitingGroup.addWidget(self.driveBackCheckBox)
                     self.labels[name] = waitingLabel
                     widgetWaiting = QtGui.QWidget()
                     widgetWaiting.setLayout(waitingGroup)
                     vbox.addWidget(widgetWaiting)
+
+
+
 
                 else:
                     label = QtGui.QLabel(self)
@@ -175,9 +189,16 @@ class InputsWidget(QtGui.QWidget):
                     self.labels[name] = label
                     vbox.addWidget(getattr(self, name))
 
-            
-
         self.setLayout(vbox)
+
+    def driveBackOptionSetter(self):
+        if (self.driveBackCheckBox.checkState() == 2):
+            self._procedure.set_parameter("driveBack", True)
+            print(self._procedure.get_parameter("driveBack"))
+        elif (self.driveBackCheckBox.checkState() == 0):
+            self._procedure.set_parameter("driveBack", False)
+            print(self._procedure.get_parameter("driveBack"))
+
     def waitingOptionSetter(self):
         if(self.waitingCheckBox.checkState() == 2):
             self._procedure.set_parameter("waiting", True)
@@ -190,21 +211,7 @@ class InputsWidget(QtGui.QWidget):
         waiting.setValue(int(self.waitingBox.text()))
         self._procedure.set_parameter("waitingTime", int(self.waitingBox.text()))
         
-    def show_info_messagebox():
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-      
-        # setting message for Message Box
-        msg.setText("Information ")
-          
-        # setting Message box window title
-        msg.setWindowTitle("Information MessageBox")
-          
-        # declaring buttons on Message Box
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-          
-        # start the app
-        retval = msg.exec_()
+
 
 
     def _button_click(self, textBox, option):
@@ -293,12 +300,13 @@ class InputsWidget(QtGui.QWidget):
             parameter_values[name] = element.parameter.value
         parameter_values["waitingTime"] = int(self.waitingBox.text())
         parameter_values["path"] = self.pathName.text()
+        if (self.driveBackCheckBox.checkState() == 2):
+            parameter_values["driveBack"] = True
+        elif (self.driveBackCheckBox.checkState() == 0):
+            parameter_values["driveBack"] = False
+
         self._procedure.set_parameters(parameter_values)
 
-        print(self._procedure.get_parameter("axis"))
-        print(self._procedure.get_parameter("waitingTime"))
-        print(self._procedure.get_parameter("path"))
-        print(self._procedure.get_parameter("filename"))
 
         return self._procedure
 

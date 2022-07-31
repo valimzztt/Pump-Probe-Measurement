@@ -64,29 +64,7 @@ import os
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-class MyMessageBox(QtGui.QMessageBox):
-    def __init__(self):
-        QtGui.QMessageBox.__init__(self)
-        self.setSizeGripEnabled(True)
 
-    def event(self, e):
-        result = QtGui.QMessageBox.event(self, e)
-
-        self.setMinimumHeight(0)
-        self.setMaximumHeight(16777215)
-        self.setMinimumWidth(0)
-        self.setMaximumWidth(16777215)
-        self.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        textEdit = self.findChild(QtGui.QTextEdit)
-        if textEdit != None :
-            textEdit.setMinimumHeight(0)
-            textEdit.setMaximumHeight(16777215)
-            textEdit.setMinimumWidth(0)
-            textEdit.setMaximumWidth(16777215)
-            textEdit.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
-
-        return result
 
 
 class PlotterWindow(QtGui.QMainWindow):
@@ -281,7 +259,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.directory_line = DirectoryLineEdit(parent=self)
 
         self.queue_button = QtGui.QPushButton('Start', self)
-        self.queue_button.clicked.connect(self.checkPositionParameter)
         self.queue_button.clicked.connect(self._queue)
         
         
@@ -446,31 +423,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
         self.close()
 
 
-    def showStageError(self, stage):
-        """Error Box that displays error in startin"""
-        mb = MyMessageBox()
-        mb.setText("The selected axis is not enabled")
-        info = ["Axis used: " + str(self.procedure.get_parameter("axis"))]
-        mb.setDetailedText( "\n".join(info))
-        mb.exec()
 
-    def showErrorStartPosition(self, stage):
-        """Error Box that displays error in startin"""
-        mb = MyMessageBox()
-        mb.setText("Wrong start position value")
-        info = ["Axis used: " + str(self.procedure.get_parameter("axis")), "Left limit: " + str(stage.right_limit),
-                "Right limit: " + str(stage.left_limit)]
-        mb.setDetailedText( "\n".join(info))
-        mb.exec()
-
-
-    def showErrorEndPosition(self, stage):
-        mb = MyMessageBox()
-        mb.setText("Wrong end position values")
-        info = ["Axis used: " + str(self.procedure.get_parameter("axis")), "Left limit: " + str(stage.right_limit),
-                "Right limit: " + str(stage.left_limit)]
-        mb.setDetailedText("\n".join(info))
-        mb.exec()
 
 
     def browser_item_changed(self, item, column):

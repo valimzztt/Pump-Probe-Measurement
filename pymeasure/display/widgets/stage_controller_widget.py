@@ -7,10 +7,10 @@ Created on Wed Jun 22 19:34:07 2022
 
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVBoxLayout
 
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QRunnable, QThreadPool
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 import logging
 
@@ -24,48 +24,8 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 import time
 
-class Worker1Timer(QObject):
-    updater = pyqtSignal()
-    def __init__(self, axis):
-        super().__init__()
-        self.axis = axis
-        self.updatePosition()
-
-    def start(self):
-        self._thread = threading.Thread(target=self.run)
-        self._thread.start()
-
-    def updatePosition(self):
-        while not self.axis.motion_done:
-            self.updater.emit()
-            print("updating")
-
-            time.sleep(0.05)
-
-class Worker1Thread(QThread):
-    finished = pyqtSignal()
-    progress = pyqtSignal()
-
-    def __init__(self, axis, position):
-        super().__init__()
-        self.axis = axis
-        self.position = position
 
 
-    def moveToPosition(self, position):
-        #this is the right command to move the stage
-
-        self.axis.write("PA" + str(position))
-        while not self.axis.motion_done:
-            time.sleep(0.05)
-
-    def run(self):
-        self.moveToPosition(self.position)
-        self.finished.emit()
-
-    def update(self):
-        print("UPDATING POSITION")
-        self.progress.emit()
 
 
 
@@ -81,10 +41,7 @@ class Worker1(QObject):
 
     def moveToPosition(self, position):
         #this is the right command to move the stage
-
         self.axis.write("PA" + str(position))
-        self.workerTimer = Worker1Timer(self.axis)
-        self.workerTimer.updater.connect(self.update)
         while not self.axis.motion_done:
             time.sleep(0.05)
 
@@ -92,9 +49,6 @@ class Worker1(QObject):
         self.progress.emit(int(self.axis.position))
         self.finished.emit()
 
-    def update(self):
-        print("UPDATING POSITION")
-        self.progress.emit(int(self.axis.position))
 
 
 class Worker2(QObject):
@@ -107,11 +61,14 @@ class Worker2(QObject):
         self.moveToPosition(position)
 
     def moveToPosition(self, position):
-        print("Moving")
+        self.axis.write("PA" + str(position))
+        while not self.axis.motion_done:
+            time.sleep(0.05)
+
 
 
     def run(self):
-        self.progress.emit(self.axis.position)
+        self.progress.emit(int(self.axis.position))
         self.finished.emit()
 
 
@@ -125,14 +82,12 @@ class Worker3(QObject):
         self.moveToPosition(position)
 
     def moveToPosition(self, position):
-        start = self.axis.position
-        curr = start
-        while curr < position:
-            curr = curr + 0.01
-            self.axis.define_position(curr)
+        self.axis.write("PA" + str(position))
+        while not self.axis.motion_done:
+            time.sleep(0.05)
 
     def run(self):
-        self.progress.emit(self.axis.position)
+        self.progress.emit(int(self.axis.position))
         self.finished.emit()
 
         
@@ -180,7 +135,7 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
 
         self.move1 = QPushButton("Move")
         self.move1.setStyleSheet("background-color : grey")
-        self.move1.clicked.connect(lambda: self.move(1,float(self.position1.value())))
+        self.move1.clicked.connect(lambda: self.move(1))
         self.tab1.layout.addWidget(self.move1)
         hbox1 = QHBoxLayout(self)
         hbox1.setSpacing(10)
@@ -213,7 +168,7 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
         self.move2 = QPushButton("Move")
         # changing color of button
         self.move2.setStyleSheet("background-color : grey")
-        self.move2.clicked.connect(lambda: self.move(2,float(self.position2.value())))
+        self.move2.clicked.connect(lambda: self.move(2))
         self.tab2.layout.addWidget(self.move2)
         
         hbox2 = QHBoxLayout(self)
@@ -249,7 +204,7 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
         self.tab3.layout.addWidget(self.position3)
         self.move3 = QPushButton("Move")
         self.move3.setStyleSheet("background-color : grey")
-        self.move3.clicked.connect(lambda: self.move(3,float(self.position3.value())))
+        self.move3.clicked.connect(lambda: self.move(3))
         self.tab3.layout.addWidget(self.move3)
         
         hbox3 = QHBoxLayout(self)
@@ -281,7 +236,6 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
 
     def enableMotor(self, axis, button, position):
         self.axis = axis
-
         self.enabled = button
         self.position = position
         if axis != None:
@@ -299,7 +253,6 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
 
 
     def reportProgress(self, axis):
-        self.position = ""
         if axis == 1:
             self.axis = self.controller.x
             self.position = self.controller.x.position
@@ -312,19 +265,43 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
             self.axis = self.controller.phi
             position = self.axis.position
             self.currPosition3.setText(str(self.axis.position))
-
-        
-        """Long-running task."""
         msg = QMessageBox(1, "Information", "Stage has been moved to position " + str(self.position), QMessageBox.Ok)
         msg.exec()
 
+    def move(self, axis):
+        if (axis == 1):
+            if(self.controller.x.enabled):
+                self.moveStage(axis)
+            else:
+                msg = QMessageBox()
+                msg.setWindowTitle("Warning")
+                msg.setText("No stage enabled on Axis 1")
+                msg.setIcon(QMessageBox.Warning)
+                msg.exec()
+        if(axis == 2):
+            if (self.controller.y.enabled):
+                self.moveStage(axis)
+            else:
+                msg = QMessageBox()
+                msg.setWindowTitle("Warning")
+                msg.setText("No stage enabled on Axis 2")
+                msg.setIcon(QMessageBox.Warning)
+                msg.exec()
+        if (axis == 3):
+            if(self.controller.phi.enabled):
+                self.moveStage(axis)
+            else:
+                msg = QMessageBox()
+                msg.setWindowTitle("Warning")
+                msg.setText("No stage enabled on Axis 3")
+                msg.setIcon(QMessageBox.Warning)
+                msg.exec()
 
-    def move(self, axis, position):
+
+    def moveStage(self, axis):
         self.thread = QThread()
         if(axis == 1):
-
             self.worker = Worker1(self.controller.x,self.position1.value())
-            #self.worker = Worker1(self.controller.x,self.position1.value())
             self.move1.setEnabled(False)
             self.worker.finished.connect(
                 lambda: self.move1.setEnabled(True)
