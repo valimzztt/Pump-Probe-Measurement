@@ -319,10 +319,6 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
         msg.exec()
 
 
-
-
-
-
     def move(self, axis, position):
         self.thread = QThread()
         if(axis == 1):
