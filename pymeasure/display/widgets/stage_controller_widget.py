@@ -271,6 +271,7 @@ class StageControllerWidget(TabWidget, QtGui.QWidget):
     def move(self, axis):
         if (axis == 1):
             if(self.controller.x.enabled):
+
                 self.moveStage(axis)
             else:
                 msg = QMessageBox()

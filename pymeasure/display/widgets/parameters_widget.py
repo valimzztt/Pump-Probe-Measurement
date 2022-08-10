@@ -142,6 +142,7 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         controlsGroup.addStretch(0)
         
         b1 = QRadioButton ("A")
+        b1.setChecked(True)
         b2 = QRadioButton ("A - B")
         b3 = QRadioButton ("I (1 MOhm)")
         b4 = QRadioButton ("I (100 MOhm)")
@@ -182,11 +183,12 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         final_layout = QVBoxLayout()
         header = QVBoxLayout()
         header.addStretch(0)
-        
+
         b1 = QRadioButton ("6 dB")
         b2 = QRadioButton ("12 dB")
         b3 = QRadioButton ("18 dB")
         b4 = QRadioButton ("24 dB")
+        b1.setChecked(True)
         
         b1.clicked.connect(lambda: self.setFilterSlope(0))
         b2.clicked.connect(lambda: self.setFilterSlope(1))
@@ -227,6 +229,7 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         ]
         sens = [str(i) for i in SENSITIVITIES]
         self.cb.addItems(sens)
+        self.cb.setCurrentIndex(6)
         self.cb.currentIndexChanged.connect(self.setSensitivity)
 
         self.sensitivity = QLabel("Sensitivity")
@@ -286,6 +289,7 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
                           "1 s", "3 s", "10 s", "30 s", "300 s", "1000 s", "3000 s", "10 000 s", "30 000 s"]
 
         self.tc.addItems(time_constants)
+        self.tc.setCurrentIndex(13)
         self.tc.currentIndexChanged.connect(self.setTime)
 
         layout.addWidget(QLabel("Time Constant"))

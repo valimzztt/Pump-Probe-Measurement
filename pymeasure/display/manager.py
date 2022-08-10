@@ -244,9 +244,6 @@ class Manager(QtCore.QObject):
                 log.debug("Manager is initiating the next experiment")
                 experiment = self.experiments.next()
 
-                print(experiment.procedure.current_iter)
-
-
                 self._running_experiment = experiment
 
                 self._worker = Worker(experiment.results, port=self.port, log_level=self.log_level)
@@ -303,6 +300,7 @@ class Manager(QtCore.QObject):
 
 
     def _changeIteration(self):
+        print("we are calling change iteration")
         self.experiments.remove(self._running_experiment)
         for exp in self.experiments:
             curr = exp.procedure.current_iter - 1
@@ -311,7 +309,8 @@ class Manager(QtCore.QObject):
     def _paused_returned(self):
         log.debug("Manager's running experiment has returned after an abort")
         experiment = self._running_experiment
-    
+
+        self._clean_up()
         self.paused_returned.emit(experiment)
 
     def _finish(self):
@@ -334,7 +333,6 @@ class Manager(QtCore.QObject):
         self._start_on_add = True
         self._is_continuous = True
         self.next()
-        
 
 
     def abort(self):
@@ -362,8 +360,21 @@ class Manager(QtCore.QObject):
         else:
             self._start_on_add = False
             self._is_continuous = False
+            # we remove the graph of the aborted procedure
+            self.remove_graph(self._running_experiment)
+            self._worker.stop()
 
-            self._worker.interrupt()
-            for experiment in self.experiments:
-                self.remove(experiment)
-            self.paused.emit(self._running_experiment)
+            for experiment in self.experiments[:]:
+                if (experiment != self._running_experiment):
+                    self.remove(experiment)
+            #self.paused.emit(self._running_experiment)
+            self.finished.emit(self._running_experiment)
+
+            self.resume()
+
+
+
+
+
+
+

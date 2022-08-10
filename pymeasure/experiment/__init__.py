@@ -30,3 +30,4 @@ from .workers import Worker
 from .listeners import Listener, Recorder
 from .config import get_config
 from .experiment import Experiment, get_array, get_array_steps, get_array_zero
+from .averagingDataRuns import AveragerRuns

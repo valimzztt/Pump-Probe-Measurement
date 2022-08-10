@@ -1,4 +1,3 @@
-#
 # This file is part of the PyMeasure package.
 #
 # Copyright (c) 2013-2022 PyMeasure Developers
@@ -113,6 +112,7 @@ class Recorder(QueueListener):
         super().__init__(queue, *handlers)
 
     def stop(self):
+        print("inside stop function in listeners.py")
         for handler in self.handlers:
             handler.close()
 

@@ -119,6 +119,7 @@ class Worker(StoppableThread):
         if topic == 'results':
             self.recorder.handle(record)
         elif topic == 'status' or topic == 'progress':
+            print("we are changing the status inside workers")
             self.monitor_queue.put((topic, record))
 
     def handle_abort(self):
@@ -136,6 +137,7 @@ class Worker(StoppableThread):
         self.update_status(Procedure.FAILED)
 
     def update_status(self, status):
+        print("we are inside update_status method in workers", status)
         self.procedure.status = status
         self.emit('status', status)
 
@@ -174,8 +176,6 @@ class Worker(StoppableThread):
             self.context.term()
 
     def run(self):
-        log.info("Worker thread started")
-
         self.procedure = self.results.procedure
         self.recorder = Recorder(self.results, self.recorder_queue)
         self.recorder.start()

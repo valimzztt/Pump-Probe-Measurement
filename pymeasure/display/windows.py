@@ -263,7 +263,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
         
         
 
-        self.abort_button = QtGui.QPushButton('Abort', self)
+        self.abort_button = QtGui.QPushButton('Abort single run', self)
         self.abort_button.setEnabled(False)
         self.abort_button.clicked.connect(self.abort)
         
@@ -343,11 +343,14 @@ class ManagedWindowBase(QtGui.QMainWindow):
         hbox.addWidget(self.pause_button)
         hbox.addStretch()
 
+        self.folderButton = QPushButton("Generate files for single run")
+
         if self.directory_input:
             vbox = QtGui.QVBoxLayout()
             vbox.addWidget(self.directory_label)
             vbox.addWidget(self.directory_line)
             vbox.addLayout(hbox)
+            vbox.addWigdet(self.folderButton)
 
         if self.inputs_in_scrollarea:
             inputs_scroll = QtGui.QScrollArea()
@@ -357,13 +360,15 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.inputs.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
             inputs_scroll.setWidget(self.inputs)
             inputs_vbox.addWidget(inputs_scroll, 1)
+            vbox.addWigdet(self.folderButton)
 
         else:
             layout = QVBoxLayout()
             layout.addWidget(self.inputs)
-            
+            layout.addWidget(self.folderButton)
             final = QWidget()
             final.setLayout(layout)
+
             inputs_vbox.addWidget(final)
             
             
@@ -646,31 +651,27 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.manager.abort()
         except:
             log.error('Failed to abort experiment', exc_info=True)
-            self.abort_button.setText("Abort")
+            self.abort_button.setText("Abort single run")
             self.abort_button.clicked.disconnect()
             self.abort_button.clicked.connect(self.abort)
     
     def interrupt(self):
+        self.pause_button.setEnabled(False)
+        self.pause_button.clicked.disconnect()
+
         try:
-            self.manager.abort()
-            self.clear_experiments()
-        except:  # noqa
-            log.error('Failed to interrupt the experiment', exc_info=True)
-            self.pause_button.setText("Interrupt the procedure")
+            self.manager.pause()
+
+        except:
+            log.error('Failed to interrupt the whole experiment', exc_info=True)
+            self.pause_button.setText("Interrupt entire experiment")
             self.pause_button.clicked.disconnect()
             self.pause_button.clicked.connect(self.interrupt)
         
-    def continuing(self):
-        self.pause_button.setText("Interrupt procedure")
-        self.pause_button.clicked.disconnect()
-        self.pause_button.clicked.connect(self.interrupt)
-        if self.manager.experiments.has_next():
-            self.manager.resume()
-        else:
-            self.pause_button.setEnabled(False)
+
 
     def resume(self):
-        self.abort_button.setText("Abort")
+        self.abort_button.setText("Abort single run")
         self.abort_button.clicked.disconnect()
         self.abort_button.clicked.connect(self.abort)
         if self.manager.experiments.has_next():

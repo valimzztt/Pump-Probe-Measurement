@@ -50,12 +50,9 @@ class RandomProcedure(Procedure):
     # initialize all the class attributes
     controller = ESP300("GPIB0::1::INSTR")
 
-    #rm = pyvisa.ResourceManager()
-    #inst = rm.open_resource('GPIB0::1::INSTR')
-
     # parameters of the procedure
     iterations = IntegerParameter('Loop Iterations', default=3)
-    delay = FloatParameter('Delay Time', units='s', default=0.2)
+    #delay = FloatParameter('Delay Time', units='s', default=0.2)
     start = IntegerParameter("start", units="mm", default=0)
     steps = IntegerParameter("steps", default=20)
     increment = FloatParameter("increment", default=1)
@@ -84,12 +81,10 @@ class RandomProcedure(Procedure):
         # create a QThread which is a handler and start the worker hat is handled by it
         self.data_filename = self.path + "\\" + self.filename + ".csv"
         self.stage = self.selectStage()
-
-
-        print("self start is ", self.start)
         self.end = self.start + self.increment * self.steps
         self.checkStageParameters()
         self.setStageAtStartPosition()
+
 
         self.startPositionStage = self.stage.position
 
@@ -111,7 +106,8 @@ class RandomProcedure(Procedure):
                     sleep(0.1)
                     self.lockin.start_buffer()
                     self.move_stage(point)
-                    print(self.stage.position)
+
+                    log.info("we can continue to retrieve data")
                     data_measurement = {
                         'Voltage': self.lockin.x, "Stage_Position": self.stage.position, "Range": point, "Average": 0
                     }
@@ -171,11 +167,21 @@ class RandomProcedure(Procedure):
         self.stage.write("PA" + str(position))
         while not self.stage.motion_done:
             sleep(0.05)
+        log.info("stage has been moved")
 
     def setStageAtStartPosition(self):
-        self.stage.write("PA" + str(self.start))
-        while not self.stage.motion_done:
-            sleep(0.05)
+        if(self.current_iter != 0):
+            if(self.driveBack):
+                self.stage.write("PA" + str(self.start))
+                while not self.stage.motion_done:
+                    sleep(0.05)
+                log.info("StAGE HAS BEEN SET AT START POSITION")
+        else:
+            self.stage.write("PA" + str(self.start))
+            while not self.stage.motion_done:
+                sleep(0.05)
+            log.info("Beginning")
+
 
     def selectStage(self):
         if (self.axis == 1):
@@ -202,7 +208,7 @@ class RandomProcedure(Procedure):
         mb.exec()
 
     def showErrorStartPosition(self):
-        print("EEEEEEERRRROR")
+
         """Error Box that displays error in startin"""
         mb = QMessageBox()
         mb.setText("Wrong start position value")
@@ -264,10 +270,10 @@ class MainWindow(ManagedWindow):
 
         super().__init__(
             procedure_class=RandomProcedure,
-            inputs=['iterations', 'delay', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting"],
+            inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting"],
             inputComand=["start", "steps", "increment", "filename", "path"],
             inputStages=["1", "2"],
-            displays=['iterations', 'delay', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting"],
+            displays=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting"],
             x_axis="Range",
             y_axis='Voltage'
         )
