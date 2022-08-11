@@ -58,7 +58,7 @@ class RandomProcedure(Procedure):
     increment = FloatParameter("increment", default=1)
 
     filename = Parameter("filename", default="default")
-    saving = BooleanParameter("saving", default=True)
+    saving = BooleanParameter("saving", default=False)
     path = Parameter("path", default=r"C:\Users\us_measurement\PycharmProjects")
     axis = ListParameter("axis", [1, 2, 3])
     waitingTime = IntegerParameter('Waiting time', default=0)
@@ -68,7 +68,7 @@ class RandomProcedure(Procedure):
 
     end = start.value + increment.value * steps.value
 
-    DATA_COLUMNS = ["Voltage", "Stage_Position", "Range", "Average"]
+    DATA_COLUMNS = ["Range", "Stage_Position", "Voltage", "Average"]
     abortedProcedure = IntegerParameter('Aborted procedure', default=0)
 
 #in order to make sure that only procedure that are completely executed are being saved
@@ -111,6 +111,11 @@ class RandomProcedure(Procedure):
                     data_measurement = {
                         'Voltage': self.lockin.x, "Stage_Position": self.stage.position, "Range": point, "Average": 0
                     }
+                    data_measurement = {
+                        "Range": point,
+                        "Stage_Position": self.stage.position, "Voltage": self.lockin.x, "Average": 0,
+                    }
+
                     data_measurement["Average"] = data_measurement.get("Voltage")
                     self.emit('results', data_measurement)
 
@@ -132,10 +137,12 @@ class RandomProcedure(Procedure):
                 sleep(0.1)
                 self.lockin.start_buffer()
                 self.move_stage(point)
-                print(self.stage.position)
+
                 data_measurement = {
-                    'Voltage': self.lockin.x, "Stage_Position": self.stage.position, "Range": point,"Average": 0
+                    "Range": point,
+                    "Stage_Position": self.stage.position, "Voltage": self.lockin.x, "Average": 0,
                 }
+
 
                 sum_voltage = (self.current_iter * df.at[row, "Average"] + data_measurement.get("Voltage")) / (
                         self.current_iter + 1)
@@ -167,7 +174,6 @@ class RandomProcedure(Procedure):
         self.stage.write("PA" + str(position))
         while not self.stage.motion_done:
             sleep(0.05)
-        log.info("stage has been moved")
 
     def setStageAtStartPosition(self):
         if(self.current_iter != 0):
@@ -175,12 +181,11 @@ class RandomProcedure(Procedure):
                 self.stage.write("PA" + str(self.start))
                 while not self.stage.motion_done:
                     sleep(0.05)
-                log.info("StAGE HAS BEEN SET AT START POSITION")
+                    log.info("Stage has been set at the start position")
         else:
             self.stage.write("PA" + str(self.start))
             while not self.stage.motion_done:
                 sleep(0.05)
-            log.info("Beginning")
 
 
     def selectStage(self):
@@ -237,6 +242,9 @@ class RandomProcedure(Procedure):
     def set_waitingTime(self, waitingTime):
         self.waitingTime = waitingTime
 
+    def set_path(self, path):
+        self.path = path
+
 
 class MyMessageBox(QMessageBox):
     def __init__(self):
@@ -270,15 +278,15 @@ class MainWindow(ManagedWindow):
 
         super().__init__(
             procedure_class=RandomProcedure,
-            inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting"],
+            inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting", "saving"],
             inputComand=["start", "steps", "increment", "filename", "path"],
             inputStages=["1", "2"],
-            displays=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting"],
+            displays=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting", "saving"],
             x_axis="Range",
             y_axis='Voltage'
         )
 
-        self.setWindowTitle('Lock-in Amplifier')
+        self.setWindowTitle('Motion Stage Controller')
         self.manager.abort_returned.connect(self.changeIteration)
         self.manager.finished.connect(self.finishedIteration)
         self.manager.finished.connect(self.checkFinishedProcedure)
@@ -318,6 +326,11 @@ class MainWindow(ManagedWindow):
         self.procedure = self.make_procedure()
         self.iterations = self.procedure.get_parameter("iterations")
         self.driveBack = self.procedure.get_parameter("driveBack")
+        self.saving = self.procedure.get_parameter("saving")
+        self.path = self.procedure.get_parameter("path")
+
+        print("saving", self.saving)
+
 
         curr = 0
         self.setStage()
@@ -328,7 +341,7 @@ class MainWindow(ManagedWindow):
                 filename = tempfile.mktemp()
                 procedure = self.make_procedure()
                 procedure.set_current_iteration(curr)
-                if (procedure.saving):
+                if (self.saving):
                     path = procedure.get_parameter("path")
                     filename_loc = procedure.get_parameter("filename")
                     self.data_filename = path + "/" + filename_loc + ".csv"

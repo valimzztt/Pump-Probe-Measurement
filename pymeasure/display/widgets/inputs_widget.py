@@ -42,10 +42,10 @@ class InputsWidget(QtGui.QWidget):
     # tuple of Input classes that do not need an external label
     NO_LABEL_INPUTS = (BooleanInput,)
 
-    def __init__(self, procedure_class, inputs=(), parent=None, hide_groups=True):
+    def __init__(self, procedure_class, procedure, inputs=(), parent=None, hide_groups=True):
         super().__init__(parent)
         self._procedure_class = procedure_class
-        self._procedure = procedure_class()
+        self._procedure = procedure
         self._inputs = inputs
         self._setup_ui()
         self._layout()
@@ -170,8 +170,20 @@ class InputsWidget(QtGui.QWidget):
                     else:
                         self.driveBackCheckBox.setChecked(True)
                     self.driveBackCheckBox.clicked.connect(self.driveBackOptionSetter)
+
+                    self.saveLabel = QtGui.QLabel(self)
+                    self.saveLabel.setText("Save data")
+                    self.saveCheckBox = QtGui.QCheckBox(self)
+                    if (self._procedure.get_parameter("saving") == False):
+                        self.saveCheckBox.setChecked(False)
+                    else:
+                        self.saveCheckBox.setChecked(True)
+                    self.saveCheckBox.clicked.connect(self.saveOptionSetter)
+
                     waitingGroup.addWidget(self.waitingBox)
                     waitingGroup.addWidget(self.waitingCheckBox)
+                    waitingGroup.addWidget(self.saveLabel)
+                    waitingGroup.addWidget(self.saveCheckBox)
                     waitingGroup.addWidget(self.driveBackLabel)
                     waitingGroup.addWidget(self.driveBackCheckBox)
                     self.labels[name] = waitingLabel
@@ -190,6 +202,14 @@ class InputsWidget(QtGui.QWidget):
                     vbox.addWidget(getattr(self, name))
 
         self.setLayout(vbox)
+
+    def saveOptionSetter(self):
+        if (self.saveCheckBox.checkState() == 2):
+            self._procedure.set_parameter("saving", True)
+            print(self._procedure.get_parameter("saving"))
+        elif (self.saveCheckBox.checkState() == 0):
+            self._procedure.set_parameter("saving", False)
+            print(self._procedure.get_parameter("saving"))
 
     def driveBackOptionSetter(self):
         if (self.driveBackCheckBox.checkState() == 2):
@@ -223,6 +243,10 @@ class InputsWidget(QtGui.QWidget):
             root.attributes('-topmost', True) # Opened windows will be active. above all windows despite of selection.
             pathDirectory = filedialog.askdirectory() # Returns opened path as str
             textBox.setValue(pathDirectory)
+            print(self.pathName.text())
+            self._procedure.set_parameter("path", self.pathName.text())
+            self._procedure.set_path(self.pathName.text())
+
         
     def _setup_visibility_groups(self):
         groups = {}
@@ -298,12 +322,18 @@ class InputsWidget(QtGui.QWidget):
         for name in self._inputs:
             element = getattr(self, name)
             parameter_values[name] = element.parameter.value
+
         parameter_values["waitingTime"] = int(self.waitingBox.text())
         parameter_values["path"] = self.pathName.text()
         if (self.driveBackCheckBox.checkState() == 2):
             parameter_values["driveBack"] = True
         elif (self.driveBackCheckBox.checkState() == 0):
             parameter_values["driveBack"] = False
+
+        if (self.saveCheckBox.checkState() == 2):
+            parameter_values["saving"] = True
+        elif (self.saveCheckBox.checkState() == 0):
+            parameter_values["saving"] = False
 
         self._procedure.set_parameters(parameter_values)
 

@@ -35,11 +35,7 @@ from .browser import BrowserItem
 from .curves import ResultsCurve
 from .manager import Manager, Experiment
 from .Qt import QtCore, QtGui
-from .widgets import FilenameWidget
-from .widgets import InputStagesWidget
-from .widgets import InputComandWidget
 from .widgets import ParametersWidget
-from .widgets import MeasurementWidget
 from .widgets import AverageResultsDialog
 from .widgets import StageControllerWidget
 from .widgets import (
@@ -53,12 +49,10 @@ from .widgets import (
     DirectoryLineEdit,
     EstimatorWidget,
 )
+from ..experiment.averagingDataRuns import AveragerRuns
 from ..experiment import Results, Procedure
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QRunnable, QThreadPool
+
 
 import os
 log = logging.getLogger(__name__)
@@ -88,7 +82,7 @@ class PlotterWindow(QtGui.QMainWindow):
 
     """
 
-    def __init__(self, plotter, refresh_time=0.1, linewidth=1, parent=None):
+    def __init__(self, plotter, refresh_time=0.1, linewidth=1.5, parent=None):
         super().__init__(parent)
         self.plotter = plotter
         self.refresh_time = refresh_time
@@ -260,7 +254,8 @@ class ManagedWindowBase(QtGui.QMainWindow):
 
         self.queue_button = QtGui.QPushButton('Start', self)
         self.queue_button.clicked.connect(self._queue)
-        
+
+
         
 
         self.abort_button = QtGui.QPushButton('Abort single run', self)
@@ -270,6 +265,9 @@ class ManagedWindowBase(QtGui.QMainWindow):
         self.pause_button = QtGui.QPushButton('Interrupt experiment', self)
         self.pause_button.setEnabled(False)
         self.pause_button.clicked.connect(self.interrupt)
+
+        self.folderButton = QPushButton("Generate files for single run")
+        self.folderButton.clicked.connect(self.generateSingleRuns)
 
         self.browser_widget = BrowserWidget(
             self.procedure_class,
@@ -291,6 +289,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
 
         self.inputs = InputsWidget(
             self.procedure_class,
+            self.procedure,
             self.inputs,
             parent=self,
             hide_groups=self.hide_groups,
@@ -343,7 +342,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
         hbox.addWidget(self.pause_button)
         hbox.addStretch()
 
-        self.folderButton = QPushButton("Generate files for single run")
+
 
         if self.directory_input:
             vbox = QtGui.QVBoxLayout()
@@ -427,6 +426,10 @@ class ManagedWindowBase(QtGui.QMainWindow):
         
         self.close()
 
+    def generateSingleRuns(self):
+        print("calling generate single runs")
+        averager = AveragerRuns(self.procedure, ["Stage position", "Voltage"])
+        averager.averaging()
 
 
 
@@ -745,14 +748,13 @@ class ManagedWindow(ManagedWindowBase):
 
     """
 
-    def __init__(self, procedure_class, x_axis=None, y_axis=None, linewidth=1, **kwargs):
-        #set the default iteration to 2
+    def __init__(self, procedure_class, x_axis=None, y_axis=None, linewidth=4, **kwargs):
         self.procedure = procedure_class()
         self.x_axis = x_axis
         self.y_axis = y_axis
         
         self.log_widget = LogWidget("Experiment Log")
-        self.parameter_widget = ParametersWidget("Parameter Logg")
+        self.parameter_widget = ParametersWidget("Parameters")
 
         self.plot_widget = PlotWidget("Results Graph", procedure_class.DATA_COLUMNS, self.x_axis,
                                       self.y_axis, linewidth=linewidth)
