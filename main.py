@@ -72,8 +72,8 @@ class Procedure(Procedure):
 
 
     end = start.value + increment.value * steps.value
-
     DATA_COLUMNS = ["Range", "Stage_Position", "Voltage", "Average"]
+    #DATA_COLUMNS = ["Range", "Stage_Position", "Voltage", "Average"]
 
 
 #in order to make sure that only procedure that are completely executed are being saved
@@ -131,8 +131,9 @@ class Procedure(Procedure):
                     sleep(0.01)
                     dictwriter_object.writerow(data_measurement)
                     if(self.saveSingleRuns):
+
                         data = {key: data_measurement[key] for key in data_measurement.keys()
-                              & {'Stage_position', 'Voltage'}}
+                              & {"Stage_Position", 'Voltage'}}
                         self.saveSingleRuns(data, self.singleRunFile)
 
                     if self.should_stop():
@@ -150,11 +151,11 @@ class Procedure(Procedure):
                 sleep(0.1)
                 self.lockin.start_buffer()
                 self.move_stage(point)
-
                 data_measurement = {
                     "Range": point,
                     "Stage_Position": self.stage.position, "Voltage": self.lockin.x, "Average": 0,
                 }
+
 
 
                 sum_voltage = (self.current_iter * df.at[row, "Average"] + data_measurement.get("Voltage")) / (
@@ -168,7 +169,7 @@ class Procedure(Procedure):
                 row = row + 1
                 if (self.saveSingleRuns):
                     data = {key: data_measurement[key] for key in data_measurement.keys()
-                            & {'Stage_position', 'Voltage'}}
+                            & {"Stage_position", 'Voltage'}}
                     self.saveSingleRuns(data, self.singleRunFile)
 
 
@@ -338,9 +339,7 @@ class MainWindow(ManagedWindow):
                 path = procedure.get_parameter("path")
                 filename_loc = procedure.get_parameter("filename")
                 self.data_filename = path + "/" + filename_loc + ".csv"
-                #we are going to delete it
-                temporaryfile = path + "/" + "added.csv"
-                results = Results(procedure, (filename, temporaryfile))
+                results = Results(procedure, filename)
             else:
                 results = Results(procedure, filename)
             experiment = self.new_experiment(results, procedure.get_parameter("iterations") - 1)

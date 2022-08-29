@@ -112,7 +112,6 @@ class Recorder(QueueListener):
         super().__init__(queue, *handlers)
 
     def stop(self):
-        print("inside stop function in listeners.py")
         for handler in self.handlers:
             handler.close()
 
