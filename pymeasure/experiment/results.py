@@ -258,7 +258,7 @@ class Results:
         """ Returns a dictionary containing the data from the line """
         data = {}
         items = line.split(Results.DELIMITER)
-        print("We have not yet written to file")
+
         for i, key in enumerate(self.procedure.DATA_COLUMNS):
             data[key] = items[i]
         return data
@@ -298,12 +298,10 @@ class Results:
         index = 0
         for i, v in previous_voltage.items():
             print('index: ', str(i), 'value: ', str(v))
-          #  log.info(self._data.get("Average voltage"))
             self._data.at[index,'Average voltage'] = 0
             
             index = index + 1
-        print(self._data)
-          #  log.info(self._data.get("Average voltage"))
+
                 
 
     @staticmethod

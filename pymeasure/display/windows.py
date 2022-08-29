@@ -38,6 +38,7 @@ from .Qt import QtCore, QtGui
 from .widgets import ParametersWidget
 from .widgets import AverageResultsDialog
 from .widgets import StageControllerWidget
+from .widgets import SignalDisplayWidget
 from .widgets import (
     PlotWidget,
     BrowserWidget,
@@ -266,8 +267,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
         self.pause_button.setEnabled(False)
         self.pause_button.clicked.connect(self.interrupt)
 
-        self.folderButton = QPushButton("Generate files for single run")
-        self.folderButton.clicked.connect(self.generateSingleRuns)
+
 
         self.browser_widget = BrowserWidget(
             self.procedure_class,
@@ -295,8 +295,8 @@ class ManagedWindowBase(QtGui.QMainWindow):
             hide_groups=self.hide_groups,
         )
         
-        
-        self.stageController = StageControllerWidget("Stage controller", self.procedure_class,
+        self.signalDisplayer = SignalDisplayWidget("Signal Dispayer", self.procedure_class, parent=self)
+        self.stageController = StageControllerWidget("Stage controller", self.procedure,
                                                      parent=self)
         
         
@@ -349,7 +349,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
             vbox.addWidget(self.directory_label)
             vbox.addWidget(self.directory_line)
             vbox.addLayout(hbox)
-            vbox.addWigdet(self.folderButton)
+
 
         if self.inputs_in_scrollarea:
             inputs_scroll = QtGui.QScrollArea()
@@ -359,12 +359,11 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.inputs.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
             inputs_scroll.setWidget(self.inputs)
             inputs_vbox.addWidget(inputs_scroll, 1)
-            vbox.addWigdet(self.folderButton)
+
 
         else:
             layout = QVBoxLayout()
             layout.addWidget(self.inputs)
-            layout.addWidget(self.folderButton)
             final = QWidget()
             final.setLayout(layout)
 
@@ -384,6 +383,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
         
         combine = QVBoxLayout()
         combine.addWidget(inputs_dock)
+        combine.addWidget(self.signalDisplayer)
         combine.addWidget(self.stageController)
         final = QWidget()
         final.setLayout(combine)
@@ -427,7 +427,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
         self.close()
 
     def generateSingleRuns(self):
-        print("calling generate single runs")
         averager = AveragerRuns(self.procedure, ["Stage position", "Voltage"])
         averager.averaging()
 

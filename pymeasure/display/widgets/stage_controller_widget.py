@@ -14,10 +14,9 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 import logging
 
-from ..log import LogHandler
+
 from ..Qt import QtGui
 from .tab_widget import TabWidget
-import sys, time, threading
 
 
 log = logging.getLogger(__name__)

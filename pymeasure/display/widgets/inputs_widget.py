@@ -103,11 +103,11 @@ class InputsWidget(QtGui.QWidget):
         self.labels = {}
         parameters = self._procedure.parameter_objects()
         for name in self._inputs:
+
             if not isinstance(getattr(self, name), self.NO_LABEL_INPUTS):
   
                 if name == "path":
-                    #4th row: path
-                    filepathGroup =  QtGui.QHBoxLayout()
+                    filepathGroup = QtGui.QHBoxLayout()
                     filepathGroup.setSpacing(10)
                     labelPath = QtGui.QLabel(self)
                     labelPath.setText("%s:" % parameters[name].name)
@@ -171,6 +171,17 @@ class InputsWidget(QtGui.QWidget):
                         self.driveBackCheckBox.setChecked(True)
                     self.driveBackCheckBox.clicked.connect(self.driveBackOptionSetter)
 
+
+                    waitingGroup.addWidget(self.waitingBox)
+                    waitingGroup.addWidget(self.waitingCheckBox)
+                    waitingGroup.addWidget(self.driveBackLabel)
+                    waitingGroup.addWidget(self.driveBackCheckBox)
+                    self.labels[name] = waitingLabel
+                    widgetWaiting = QtGui.QWidget()
+                    widgetWaiting.setLayout(waitingGroup)
+                    vbox.addWidget(widgetWaiting)
+
+                    savingGroup = QtGui.QHBoxLayout()
                     self.saveLabel = QtGui.QLabel(self)
                     self.saveLabel.setText("Save data")
                     self.saveCheckBox = QtGui.QCheckBox(self)
@@ -180,19 +191,31 @@ class InputsWidget(QtGui.QWidget):
                         self.saveCheckBox.setChecked(True)
                     self.saveCheckBox.clicked.connect(self.saveOptionSetter)
 
-                    waitingGroup.addWidget(self.waitingBox)
-                    waitingGroup.addWidget(self.waitingCheckBox)
-                    waitingGroup.addWidget(self.saveLabel)
-                    waitingGroup.addWidget(self.saveCheckBox)
-                    waitingGroup.addWidget(self.driveBackLabel)
-                    waitingGroup.addWidget(self.driveBackCheckBox)
-                    self.labels[name] = waitingLabel
-                    widgetWaiting = QtGui.QWidget()
-                    widgetWaiting.setLayout(waitingGroup)
-                    vbox.addWidget(widgetWaiting)
+                    self.saveRunsLabel = QtGui.QLabel(self)
+                    self.saveRunsLabel.setText("Save single runs")
+                    self.saveRunsCheckBox = QtGui.QCheckBox(self)
+                    if (self._procedure.get_parameter("saveRuns") == False):
+                        self.saveRunsCheckBox.setChecked(False)
+                    else:
+                        self.saveRunsCheckBox.setChecked(True)
+                    self.saveRunsCheckBox.clicked.connect(self.saveRunsOptionSetter)
+
+                    savingGroup.addWidget(self.saveLabel)
+                    savingGroup.addWidget(self.saveCheckBox)
+                    savingGroup.addWidget(self.saveRunsLabel)
+                    savingGroup.addWidget(self.saveRunsCheckBox)
+                    self.labels["saveRuns"] = self.saveRunsLabel
+
+                    widgetSaving = QtGui.QWidget()
+                    widgetSaving.setLayout(savingGroup)
 
 
-
+                    checkLayout =  QtGui.QVBoxLayout()
+                    checkLayout.addWidget(widgetWaiting)
+                    checkLayout.addWidget(widgetSaving)
+                    widgetCheck= QtGui.QWidget()
+                    widgetCheck.setLayout(checkLayout)
+                    vbox.addWidget(widgetCheck)
 
                 else:
                     label = QtGui.QLabel(self)
@@ -206,10 +229,17 @@ class InputsWidget(QtGui.QWidget):
     def saveOptionSetter(self):
         if (self.saveCheckBox.checkState() == 2):
             self._procedure.set_parameter("saving", True)
-            print(self._procedure.get_parameter("saving"))
+
         elif (self.saveCheckBox.checkState() == 0):
             self._procedure.set_parameter("saving", False)
-            print(self._procedure.get_parameter("saving"))
+
+    def saveRunsOptionSetter(self):
+        if (self.saveRunsCheckBox.checkState() == 2):
+            self._procedure.set_parameter("saveRuns", True)
+
+        elif (self.saveRunsCheckBox.checkState() == 0):
+            self._procedure.set_parameter("saveRuns", False)
+
 
     def driveBackOptionSetter(self):
         if (self.driveBackCheckBox.checkState() == 2):
@@ -334,6 +364,11 @@ class InputsWidget(QtGui.QWidget):
             parameter_values["saving"] = True
         elif (self.saveCheckBox.checkState() == 0):
             parameter_values["saving"] = False
+
+        if (self.saveRunsCheckBox.checkState() == 2):
+            parameter_values["saveRuns"] = True
+        elif (self.saveRunsCheckBox.checkState() == 0):
+            parameter_values["saveRuns"] = False
 
         self._procedure.set_parameters(parameter_values)
 

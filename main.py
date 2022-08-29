@@ -19,10 +19,13 @@ import PyQt5.QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 from pymeasure.instruments.newport.esp300 import ESP300
+from pymeasure.instruments.srs import SR830
 import sys
 from csv import DictWriter
 import pandas as pd
 from PyQt5 import QtGui
+import os
+import csv
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -49,16 +52,17 @@ class WorkerPositionError(QObject):
 class RandomProcedure(Procedure):
     # initialize all the class attributes
     controller = ESP300("GPIB0::1::INSTR")
+    lockin = SR830("GPIB::8")
 
     # parameters of the procedure
     iterations = IntegerParameter('Loop Iterations', default=3)
-    #delay = FloatParameter('Delay Time', units='s', default=0.2)
     start = IntegerParameter("start", units="mm", default=0)
     steps = IntegerParameter("steps", default=20)
     increment = FloatParameter("increment", default=1)
-
+    saveRuns = BooleanParameter("saveRuns", default=True)
     filename = Parameter("filename", default="default")
     saving = BooleanParameter("saving", default=False)
+
     path = Parameter("path", default=r"C:\Users\us_measurement\PycharmProjects")
     axis = ListParameter("axis", [1, 2, 3])
     waitingTime = IntegerParameter('Waiting time', default=0)
@@ -66,10 +70,11 @@ class RandomProcedure(Procedure):
     waiting = BooleanParameter("Waiting", default= False)
 
 
+
     end = start.value + increment.value * steps.value
 
     DATA_COLUMNS = ["Range", "Stage_Position", "Voltage", "Average"]
-    abortedProcedure = IntegerParameter('Aborted procedure', default=0)
+
 
 #in order to make sure that only procedure that are completely executed are being saved
 
@@ -95,7 +100,14 @@ class RandomProcedure(Procedure):
         self.min_current = self.start
         self.scale = np.linspace(0, 50, self.data_points)
         i = 0
-
+        if (self.saveSingleRuns):
+            self.folder = self.path + "\singleRuns"
+            if not os.path.exists(self.folder):
+                os.makedirs(self.folder)
+            self.singleRunFile = self.folder + r"\\" + "run" + str(self.current_iter) + self.filename + ".csv"
+            with open(self.singleRunFile, "w") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Stage position", "Voltage"])
 
         if (self.current_iter == 0):
             with open(self.data_filename, 'w', newline='') as csvfile:
@@ -107,10 +119,6 @@ class RandomProcedure(Procedure):
                     self.lockin.start_buffer()
                     self.move_stage(point)
 
-                    log.info("we can continue to retrieve data")
-                    data_measurement = {
-                        'Voltage': self.lockin.x, "Stage_Position": self.stage.position, "Range": point, "Average": 0
-                    }
                     data_measurement = {
                         "Range": point,
                         "Stage_Position": self.stage.position, "Voltage": self.lockin.x, "Average": 0,
@@ -119,8 +127,13 @@ class RandomProcedure(Procedure):
                     data_measurement["Average"] = data_measurement.get("Voltage")
                     self.emit('results', data_measurement)
 
+
                     sleep(0.01)
                     dictwriter_object.writerow(data_measurement)
+                    if(self.saveSingleRuns):
+                        data = {key: data_measurement[key] for key in data_measurement.keys()
+                              & {'Stage_position', 'Voltage'}}
+                        self.saveSingleRuns(data, self.singleRunFile)
 
                     if self.should_stop():
                         log.info("User aborted the procedure")
@@ -153,6 +166,11 @@ class RandomProcedure(Procedure):
                 sum_voltages.append(sum_voltage)
 
                 row = row + 1
+                if (self.saveSingleRuns):
+                    data = {key: data_measurement[key] for key in data_measurement.keys()
+                            & {'Stage_position', 'Voltage'}}
+                    self.saveSingleRuns(data, self.singleRunFile)
+
 
                 if self.should_stop():
                     log.info("User aborted the procedure")
@@ -165,9 +183,6 @@ class RandomProcedure(Procedure):
                     i = i +1
 
         if(self.driveBack):
-            print("Driving back")
-            print(self.start)
-            print(self.stage.position)
             self.move_stage(int(self.startPositionStage))
 
     def move_stage(self, position):
@@ -231,6 +246,12 @@ class RandomProcedure(Procedure):
         mb.setDetailedText("\n".join(info))
         mb.exec()
 
+    def saveSingleRuns(self, data, file):
+        singleRunData = pd.DataFrame([data])
+        singleRunData.to_csv(file, mode='a', index=False, header=False)
+
+
+
     def shutdown(self):
         log.info("Finished measuring Random Procedure")
 
@@ -278,10 +299,10 @@ class MainWindow(ManagedWindow):
 
         super().__init__(
             procedure_class=RandomProcedure,
-            inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting", "saving"],
+            inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting", "saving", "saveRuns"],
             inputComand=["start", "steps", "increment", "filename", "path"],
             inputStages=["1", "2"],
-            displays=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting", "saving"],
+            displays=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime","waiting", "saving", "saveRuns"],
             x_axis="Range",
             y_axis='Voltage'
         )
@@ -322,14 +343,19 @@ class MainWindow(ManagedWindow):
 
 
 
+
+
+
     def queue(self):
         self.procedure = self.make_procedure()
         self.iterations = self.procedure.get_parameter("iterations")
         self.driveBack = self.procedure.get_parameter("driveBack")
         self.saving = self.procedure.get_parameter("saving")
+        self.saveSingleRuns = self.procedure.get_parameter("saveSingleRuns")
         self.path = self.procedure.get_parameter("path")
 
         print("saving", self.saving)
+        print("save single runs", self.saveSingleRuns)
 
 
         curr = 0

@@ -42,3 +42,4 @@ from .input_stages_widget import InputStagesWidget
 from .stage_controller_widget import StageControllerWidget
 from .average_results_dialog import AverageResultsDialog
 from .averagecurve import ResultsImageAverage, ResultsCurveAverage, BufferCurveAverage
+from .signal_display import SignalDisplayWidget
