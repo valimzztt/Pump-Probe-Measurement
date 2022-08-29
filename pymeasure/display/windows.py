@@ -263,10 +263,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
         self.abort_button.setEnabled(False)
         self.abort_button.clicked.connect(self.abort)
         
-        self.pause_button = QtGui.QPushButton('Interrupt experiment', self)
-        self.pause_button.setEnabled(False)
-        self.pause_button.clicked.connect(self.interrupt)
-
 
 
         self.browser_widget = BrowserWidget(
@@ -300,10 +296,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
                                                      parent=self)
         
         
-        
-        
-        
-        
 
         self.manager = Manager(self.widget_list,
                                self.browser,
@@ -311,7 +303,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
                                parent=self)
         
         self.manager.abort_returned.connect(self.abort_returned)
-        self.manager.paused_returned.connect(self.paused_returned)
         self.manager.queued.connect(self.queued)
         self.manager.running.connect(self.running)
         self.manager.finished.connect(self.finished)
@@ -339,7 +330,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
         hbox.setContentsMargins(-1, 6, -1, 6)
         hbox.addWidget(self.queue_button)
         hbox.addWidget(self.abort_button)
-        hbox.addWidget(self.pause_button)
         hbox.addStretch()
 
 
@@ -656,19 +646,7 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.abort_button.setText("Abort single run")
             self.abort_button.clicked.disconnect()
             self.abort_button.clicked.connect(self.abort)
-    
-    def interrupt(self):
-        self.pause_button.setEnabled(False)
-        self.pause_button.clicked.disconnect()
 
-        try:
-            self.manager.pause()
-
-        except:
-            log.error('Failed to interrupt the whole experiment', exc_info=True)
-            self.pause_button.setText("Interrupt entire experiment")
-            self.pause_button.clicked.disconnect()
-            self.pause_button.clicked.connect(self.interrupt)
         
 
 
@@ -683,7 +661,6 @@ class ManagedWindowBase(QtGui.QMainWindow):
 
     def queued(self, experiment):
         self.abort_button.setEnabled(True)
-        self.pause_button.setEnabled(True)
         self.browser_widget.show_button.setEnabled(True)
         self.browser_widget.hide_button.setEnabled(True)
         self.browser_widget.clear_button.setEnabled(True)
@@ -699,19 +676,12 @@ class ManagedWindowBase(QtGui.QMainWindow):
             self.browser_widget.clear_button.setEnabled(True)
 
 
-    
-    def paused_returned(self, experiment):
-        self.paused_button.setText("Continue")
-        self.paused_button.setEnabled(True)
-        self.clear_experiments()
-        
+
     def finished(self, experiment):
 
         self.manager.remove_graph(experiment)
-       # self.manager.plot_average(experiment)
         if not self.manager.experiments.has_next():
             self.abort_button.setEnabled(False)
-            self.pause_button.setEnabled(False)
             self.browser_widget.clear_button.setEnabled(True)
 
     @property

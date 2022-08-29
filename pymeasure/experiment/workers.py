@@ -119,7 +119,6 @@ class Worker(StoppableThread):
         if topic == 'results':
             self.recorder.handle(record)
         elif topic == 'status' or topic == 'progress':
-            print("we are changing the status inside workers")
             self.monitor_queue.put((topic, record))
 
     def handle_abort(self):
@@ -137,7 +136,6 @@ class Worker(StoppableThread):
         self.update_status(Procedure.FAILED)
 
     def update_status(self, status):
-        print("we are inside update_status method in workers", status)
         self.procedure.status = status
         self.emit('status', status)
 
@@ -145,6 +143,7 @@ class Worker(StoppableThread):
         self.procedure.shutdown()
         if self.should_stop() and self.procedure.status == Procedure.RUNNING:
             self.update_status(Procedure.ABORTED)
+            #self.update_status(Procedure.PAUSED)
         elif self.procedure.status == Procedure.RUNNING:
             self.update_status(Procedure.FINISHED)
             self.emit('progress', 100.)
@@ -158,15 +157,17 @@ class Worker(StoppableThread):
             self.publisher.close()
             self.context.term()
 
-    #version taken from shutdown
+
     def interrupt(self):
-        #only writes on the log module
         self.procedure.shutdown()
         if self.should_stop() and self.procedure.status == Procedure.RUNNING:
             self.update_status(Procedure.PAUSED)
         elif self.procedure.status == Procedure.RUNNING:
             self.update_status(Procedure.FINISHED)
             self.emit('progress', 100.)
+
+        self.recorder.stop()
+        self.monitor_queue.put(None)
 
         if self.context is not None:
             # Cleanly close down ZMQ context and associated socket

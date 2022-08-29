@@ -244,10 +244,11 @@ class InputsWidget(QtGui.QWidget):
     def driveBackOptionSetter(self):
         if (self.driveBackCheckBox.checkState() == 2):
             self._procedure.set_parameter("driveBack", True)
-            print(self._procedure.get_parameter("driveBack"))
+            self.driveBackCheckBox.setChecked(True)
         elif (self.driveBackCheckBox.checkState() == 0):
-            self._procedure.set_parameter("driveBack", False)
-            print(self._procedure.get_parameter("driveBack"))
+            #driveBack will always be true, can be changed easily
+            self._procedure.set_parameter("driveBack", True)
+            self.driveBackCheckBox.setChecked(True)
 
     def waitingOptionSetter(self):
         if(self.waitingCheckBox.checkState() == 2):

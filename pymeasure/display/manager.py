@@ -134,6 +134,7 @@ class Manager(QtCore.QObject):
     abort_returned = QtCore.QSignal(object)
     paused_returned = QtCore.QSignal(object)
     log = QtCore.QSignal(object)
+    resetIteration = QtCore.QSignal()
 
     def __init__(self, widget_list, browser, port=5888, log_level=logging.INFO, parent=None):
         super().__init__(parent)
@@ -179,9 +180,7 @@ class Manager(QtCore.QObject):
     #added by Vali
     def plot_average(self, experiment):
         curve = experiment.curve_list[0]
-        print(curve)
         wdg = self.widget_list[0]
-        print(wdg)
         wdg.load(curve)
             
             
@@ -226,6 +225,8 @@ class Manager(QtCore.QObject):
         for wdg, curve in zip(self.widget_list, experiment.curve_list):
             wdg.remove(curve)
 
+
+
     def clear(self):
         """ Remove all Experiments
         """
@@ -254,7 +255,6 @@ class Manager(QtCore.QObject):
                 self._monitor.worker_failed.connect(self._failed)
                 self._monitor.worker_abort_returned.connect(self._changeIteration)
                 self._monitor.worker_abort_returned.connect(self._abort_returned)
-                self._monitor.worker_paused_returned.connect(self._paused_returned)
                 self._monitor.worker_finished.connect(self._finish)
                 self._monitor.progress.connect(self._update_progress)
                 self._monitor.status.connect(self._update_status)
@@ -264,8 +264,6 @@ class Manager(QtCore.QObject):
                 self._worker.start()
 
     def continuing(self):
-        """
-        """
         self._clean_up()
 
 
@@ -300,18 +298,13 @@ class Manager(QtCore.QObject):
 
 
     def _changeIteration(self):
-        print("we are calling change iteration")
         self.experiments.remove(self._running_experiment)
         for exp in self.experiments:
             curr = exp.procedure.current_iter - 1
             exp.procedure.set_current_iteration(curr)
 
-    def _paused_returned(self):
-        log.debug("Manager's running experiment has returned after an abort")
-        experiment = self._running_experiment
 
-        self._clean_up()
-        self.paused_returned.emit(experiment)
+
 
     def _finish(self):
         log.debug("Manager's running experiment has finished")
@@ -326,6 +319,7 @@ class Manager(QtCore.QObject):
         sleep(experiment.procedure.get_parameter("waitingTime"))
         if self._is_continuous:  # Continue running procedures
             self.next()
+
 
     def resume(self):
         """ Resume processing of the queue.
@@ -350,27 +344,8 @@ class Manager(QtCore.QObject):
             self._worker.stop()
             self.aborted.emit(self._running_experiment)
    
-    def pause(self):
-        """ Interrupts the whole experiment and deletes everything the currently running Experiment, but raises an exception if
-        there is no running experiment
-        """
-        if not self.is_running():
-            raise Exception("Attempting to pause when no experiment "
-                            "is running")
-        else:
-            self._start_on_add = False
-            self._is_continuous = False
-            # we remove the graph of the aborted procedure
-            self.remove_graph(self._running_experiment)
-            self._worker.stop()
 
-            for experiment in self.experiments[:]:
-                if (experiment != self._running_experiment):
-                    self.remove(experiment)
-            #self.paused.emit(self._running_experiment)
-            self.finished.emit(self._running_experiment)
 
-            self.resume()
 
 
 

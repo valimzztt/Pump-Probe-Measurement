@@ -49,7 +49,7 @@ class WorkerPositionError(QObject):
         self.finished.emit()
 
 
-class RandomProcedure(Procedure):
+class Procedure(Procedure):
     # initialize all the class attributes
     controller = ESP300("GPIB0::1::INSTR")
     lockin = SR830("GPIB::8")
@@ -298,7 +298,7 @@ class MainWindow(ManagedWindow):
         log.info("Connecting and configuring the instrument")
 
         super().__init__(
-            procedure_class=RandomProcedure,
+            procedure_class=Procedure,
             inputs=['iterations', "start", "steps", "increment", "filename", "path", "axis", "driveBack", "waitingTime", "waiting", "saving", "saveRuns"],
             inputComand=["start", "steps", "increment", "filename", "path"],
             inputStages=["1", "2"],
@@ -311,10 +311,12 @@ class MainWindow(ManagedWindow):
         self.manager.abort_returned.connect(self.changeIteration)
         self.manager.finished.connect(self.finishedIteration)
         self.manager.finished.connect(self.checkFinishedProcedure)
+        self.manager.resetIteration.connect(self.resetCurrIteration)
         self.iterations = None
         self.should_run = True
         self.curr = 0
         self.stage = None
+
 
     def finishedIteration(self):
         self.curr = self.curr + 1
@@ -322,6 +324,9 @@ class MainWindow(ManagedWindow):
     def checkFinishedProcedure(self):
         if(self.curr == self.procedure.get_parameter("iterations")):
             self.curr = 0
+    def resetCurrIteration(self):
+        self.curr = 0
+        self.procedure.set_current_iteration(0)
 
 
     def changeIteration(self):
@@ -353,9 +358,6 @@ class MainWindow(ManagedWindow):
         self.saving = self.procedure.get_parameter("saving")
         self.saveSingleRuns = self.procedure.get_parameter("saveSingleRuns")
         self.path = self.procedure.get_parameter("path")
-
-        print("saving", self.saving)
-        print("save single runs", self.saveSingleRuns)
 
 
         curr = 0

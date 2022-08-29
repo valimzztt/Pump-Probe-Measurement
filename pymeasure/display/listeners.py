@@ -119,12 +119,7 @@ class Monitor(QtCore.QThread):
                 elif data == Procedure.FINISHED:
                     self.worker_finished.emit()
                 elif data == Procedure.ABORTED:
-                    print("We have returned from aborted")
                     self.worker_abort_returned.emit()
-                elif data == Procedure.PAUSED:
-                    print("We have returned from paused")
-                    # is not being called because we are not setting Procedure.Paused
-                    self.worker_paused_returned.emit() 
             elif topic == 'progress':
                 self.progress.emit(data)
             elif topic == 'log':
