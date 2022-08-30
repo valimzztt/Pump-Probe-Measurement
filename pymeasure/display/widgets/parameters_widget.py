@@ -142,8 +142,8 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         controlsGroup.addStretch(0)
 
         b1 = QRadioButton("A")
-        b1.setChecked(True)
         b2 = QRadioButton("A - B")
+        b2.setChecked(True)
         b3 = QRadioButton("I (1 MOhm)")
         b4 = QRadioButton("I (100 MOhm)")
         controlsGroup.addWidget(b1)
@@ -247,12 +247,12 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         self.lockin.reserve = self.lockin.RESERVE_VALUES[option]
 
     def defaultSetter(self):
-        self.lockin.input_config = self.lockin.INPUT_CONFIGS[0]
+        self.lockin.input_config = self.lockin.INPUT_CONFIGS[1]
         self.lockin.input_grounding = self.lockin.INPUT_GROUNDINGS[0]
         self.lockin.input_coupling = self.lockin.INPUT_COUPLINGS[0]
         self.lockin.filter_slope = self.lockin.FILTER_SLOPES[3]
-        self.lockin.time_constant = self.lockin.TIME_CONSTANTS[0]
-        self.lockin.sensitivity = self.lockin.SENSITIVITIES[6]
+        self.lockin.time_constant = self.lockin.TIME_CONSTANTS[7]
+        self.lockin.sensitivity = self.lockin.SENSITIVITIES[19]
 
     def setInputConfig(self, option):
         self.lockin.input_config = self.lockin.INPUT_CONFIGS[option]
@@ -309,7 +309,7 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
         ]
         sens = [str(i) for i in SENSITIVITIES]
         self.cb.addItems(sens)
-        self.cb.setCurrentIndex(6)
+        self.cb.setCurrentIndex(19)
         self.cb.currentIndexChanged.connect(self.setSensitivity)
 
         self.sensitivity = QLabel("Sensitivity")
@@ -367,7 +367,7 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
                           "1 s", "3 s", "10 s", "30 s", "300 s", "1000 s", "3000 s", "10 000 s", "30 000 s"]
 
         self.tc.addItems(time_constants)
-        self.tc.setCurrentIndex(13)
+        self.tc.setCurrentIndex(7)
         self.tc.currentIndexChanged.connect(self.setTime)
 
         layout.addWidget(QLabel("Time Constant"))
@@ -379,7 +379,6 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
 
     def setTime(self):
         time_constant = self.characters(self.tc.currentText())
-        print(time_constant)
         TIME_CONSTANTS = [
             10e-6, 30e-6, 100e-6, 300e-6, 1e-3, 3e-3, 10e-3,
             30e-3, 100e-3, 300e-3, 1, 3, 10, 30, 100, 300, 1e3,
@@ -397,7 +396,6 @@ class ParametersWidget(TabWidget, QtGui.QWidget):
     def characters(self, string):
         mag = int(re.sub(r'[^0-9]', '', str(string)))
         decimal = re.sub(r'[^a-zA-Z|µ]', '', str(string))
-        print(decimal)
         num = 0
         scientific = 0
         if (decimal == "s"):
