@@ -12,5 +12,5 @@ Before starting the measurements, the user needs to select the axis that will be
 
 
 ## Details 
-The lock-in amplifier used is a SRS830 LOCK-IN AMPLIFIER (https://www.thinksrs.com/downloads/pdfs/manuals/SR830m.pdf)
+The lock-in amplifier used is a SRS830 LOCK-IN AMPLIFIER (https://www.thinksrs.com/downloads/pdfs/manuals/SR830m.pdf). 
 The 3-Axis Motion controller is a Newport ESP300 (https://www.manualslib.com/manual/1601201/Newport-Esp300-Series.html).
