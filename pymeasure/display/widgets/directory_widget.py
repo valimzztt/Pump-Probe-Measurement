@@ -25,12 +25,13 @@
 import logging
 
 from ..Qt import QtCore, QtGui
+from PyQt5.QtWidgets import QLineEdit
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class DirectoryLineEdit(QtGui.QLineEdit):
+class DirectoryLineEdit(QLineEdit):
     """
     Widget that allows to choose a directory path.
     A completer is implemented for quick completion.

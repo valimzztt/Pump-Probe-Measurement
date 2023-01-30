@@ -33,6 +33,7 @@ from inspect import signature
 import re
 
 from ..Qt import QtGui
+from PyQt5.QtWidgets import QWidget
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -79,7 +80,7 @@ class SequenceEvaluationException(Exception):
     pass
 
 
-class SequencerWidget(QtGui.QWidget):
+class SequencerWidget(QWidget):
     """
     Widget that allows to generate a sequence of measurements with varying
     parameters. Moreover, one can write a simple text file to easily load a

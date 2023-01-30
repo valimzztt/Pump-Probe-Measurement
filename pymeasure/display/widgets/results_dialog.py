@@ -23,20 +23,19 @@
 #
 
 import logging
-
 import os
 import pyqtgraph as pg
-
 from ..curves import ResultsCurve
 from ..Qt import QtCore, QtGui
 from ...experiment.results import Results
 from .plot_widget import PlotWidget
+from PyQt5.QtWidgets import *
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class ResultsDialog(QtGui.QFileDialog):
+class ResultsDialog(QFileDialog):
     """
     Widget that displays a dialog box for loading a past experiment run.
     It shows a preview of curves from the results file when selected in the dialog box.

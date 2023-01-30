@@ -5,24 +5,11 @@ Created on Wed Jun  8 11:57:38 2022
 @author: mazzotti
 """
 
-from ..Qt import QtGui
-from .tab_widget import TabWidget
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout
 import numpy as np
 from tkinter import Tk, filedialog
-from pymeasure.experiment import Procedure
-from pymeasure.experiment import IntegerParameter, FloatParameter
-from pymeasure.experiment import Results
-from pymeasure.experiment import Worker
-
 import logging
-
-from ..log import LogHandler
 from ..Qt import QtGui
 from .tab_widget import TabWidget
 
@@ -32,7 +19,7 @@ log.addHandler(logging.NullHandler())
 
 
 
-class MeasurementWidget(TabWidget, QtGui.QWidget):
+class MeasurementWidget(TabWidget, QWidget):
     """ Widget to display measurement information in Gui
 
     It is recommended to include this widget in all subclasses of

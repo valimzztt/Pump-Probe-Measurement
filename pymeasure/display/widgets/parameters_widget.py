@@ -27,22 +27,21 @@ from ..Qt import QtGui
 from .tab_widget import TabWidget
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
+from PyQt5.QtWidgets import  QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot
 import re
 from decimal import Decimal
 
+
 import pymeasure
 from pymeasure.instruments.srs import SR830
-import pymeasure.display.inputs
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class ParametersWidget(TabWidget, QtGui.QWidget):
+class ParametersWidget(TabWidget, QWidget):
     """ Widget to display logging information in GUI
 
     It is recommended to include this widget in all subclasses of

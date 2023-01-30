@@ -43,12 +43,12 @@ from tkinter import Tk, filedialog
 from ..inputs import BooleanInput, IntegerInput, ListInput, ScientificInput, StringInput
 from ..Qt import QtCore, QtGui
 from ...experiment import parameters
-
+from PyQt5.QtWidgets import *
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class FilenameWidget(QtGui.QWidget):
+class FilenameWidget(QWidget):
     """
     Widget wrapper for various :doc:`inputs`
     """

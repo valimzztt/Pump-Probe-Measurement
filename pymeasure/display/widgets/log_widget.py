@@ -27,12 +27,12 @@ import logging
 from ..log import LogHandler
 from ..Qt import QtGui
 from .tab_widget import TabWidget
-
+from PyQt5.QtWidgets import QWidget
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class LogWidget(TabWidget, QtGui.QWidget):
+class LogWidget(TabWidget, QWidget):
     """ Widget to display logging information in GUI
 
     It is recommended to include this widget in all subclasses of

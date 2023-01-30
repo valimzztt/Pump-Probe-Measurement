@@ -29,12 +29,12 @@ from ..inputs import BooleanInput, IntegerInput, ListInput, ScientificInput, Str
 from ..Qt import QtCore, QtGui
 from ...experiment import parameters
 from tkinter import Tk, filedialog
-
+from PyQt5.QtWidgets import QWidget
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class InputsWidget(QtGui.QWidget):
+class InputsWidget(QWidget):
     """
     Widget wrapper for various :doc:`inputs`
     """

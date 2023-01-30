@@ -30,10 +30,9 @@ Created on Thu Jul  7 16:29:55 2022
 #
 
 import logging
-
 import os
 import pyqtgraph as pg
-
+from PyQt5.QtWidgets import *
 from ..curves import ResultsCurve
 from ..Qt import QtCore, QtGui
 from ...experiment.results import Results
@@ -43,7 +42,7 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class AverageResultsDialog(QtGui.QFileDialog):
+class AverageResultsDialog(QFileDialog):
     """
     Widget that displays a dialog box for loading the average voltage of a past experiment run.
     It shows a preview of curves from the results file when selected in the dialog box.

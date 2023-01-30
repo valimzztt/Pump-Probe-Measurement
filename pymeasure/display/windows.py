@@ -23,14 +23,10 @@
 #
 
 import logging
-
-import os
 import platform
 import subprocess
-
-
+from PyQt5.QtWidgets import *
 import pyqtgraph as pg
-
 from .browser import BrowserItem
 from .curves import ResultsCurve
 from .manager import Manager, Experiment
@@ -52,17 +48,16 @@ from .widgets import (
 )
 from ..experiment.averagingDataRuns import AveragerRuns
 from ..experiment import Results, Procedure
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QGridLayout
-
-
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 import os
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
 
 
-class PlotterWindow(QtGui.QMainWindow):
+class PlotterWindow(QMainWindow):
     """
     A window for plotting experiment results. Should not be
     instantiated directly, but only via the
@@ -139,7 +134,7 @@ class PlotterWindow(QtGui.QMainWindow):
             QtCore.QCoreApplication.instance().quit()
 
 
-class ManagedWindowBase(QtGui.QMainWindow):
+class ManagedWindowBase(QMainWindow):
     """
     Base class for GUI experiment management .
 

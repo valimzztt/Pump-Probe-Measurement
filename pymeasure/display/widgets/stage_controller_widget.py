@@ -7,14 +7,9 @@ Created on Wed Jun 22 19:34:07 2022
 
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVBoxLayout
-
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
-
 import logging
-
-
 from ..Qt import QtGui
 from .tab_widget import TabWidget
 
@@ -92,7 +87,7 @@ class Worker3(QObject):
         
 #This Widget Class is used to move the stage to the exact position
   
-class StageControllerWidget(TabWidget, QtGui.QWidget):
+class StageControllerWidget(TabWidget, QWidget):
     """ Widget to display measurement information in Gui
 
     It is recommended to include this widget in all subclasses of

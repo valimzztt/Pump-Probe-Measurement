@@ -1,18 +1,10 @@
+from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtWidgets import *
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVBoxLayout
-
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
-
-import logging
-
-from ..log import LogHandler
-from ..Qt import QtGui
 from .tab_widget import TabWidget
-from PyQt5.QtCore import QTimer,QDateTime
+from PyQt5.QtCore import QTimer
 
 
-class SignalDisplayWidget(TabWidget, QtGui.QWidget):
+class SignalDisplayWidget(TabWidget, QWidget):
     def __init__(self, name, procedure, parent=None):
         super().__init__(name, parent)
 

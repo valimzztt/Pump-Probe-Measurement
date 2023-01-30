@@ -31,12 +31,13 @@ from ..curves import ResultsCurve, Crosshairs
 from .averagecurve import ResultsImageAverage, ResultsCurveAverage, BufferCurveAverage
 from ..Qt import QtCore, QtGui
 from ...experiment import Procedure
+from PyQt5.QtWidgets import QFrame
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class PlotFrame(QtGui.QFrame):
+class PlotFrame(QFrame):
     """ Combines a PyQtGraph Plot with Crosshairs. Refreshes
     the plot based on the refresh_time, and allows the axes
     to be changed on the fly, which updates the plotted data

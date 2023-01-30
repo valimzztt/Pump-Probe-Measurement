@@ -30,12 +30,12 @@ from ..curves import ResultsCurve
 from ..Qt import QtCore, QtGui
 from .tab_widget import TabWidget
 from .plot_frame import PlotFrame
-
+from PyQt5.QtWidgets import *
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class PlotWidget(TabWidget, QtGui.QWidget):
+class PlotWidget(TabWidget, QWidget):
     """ Extends :class:`PlotFrame<pymeasure.display.widgets.plot_frame.PlotFrame>`
     to allow different columns of the data to be dynamically chosen
     """

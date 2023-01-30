@@ -6,18 +6,17 @@ Created on Wed Jun 22 19:28:39 2022
 """
 
 import logging
-
 from functools import partial
-
 from ..inputs import BooleanInput, IntegerInput, ListInput, ScientificInput, StringInput
 from ..Qt import QtCore, QtGui
 from ...experiment import parameters
+from PyQt5.QtWidgets import *
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-class InputStagesWidget(QtGui.QWidget):
+class InputStagesWidget(QWidget):
     """
     Widget wrapper for various :doc:`inputs`
     """
